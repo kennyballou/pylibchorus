@@ -1,0 +1,5 @@
+build
+dist
+pylibchorus.egg-info
+**/*.pyc
+**/__pycache__
