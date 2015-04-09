@@ -69,6 +69,19 @@ def _login_(username, password):
         'method': 'POST',
     }
 
+def _check_login_(_, cookies):
+    '''Create request data for check login check'''
+    return {
+        'data': None,
+        'params': None,
+        'headers': {
+            'content-type': CONTENT_TYPE,
+        },
+        'cookies': cookies,
+        'url': '/sessions',
+        'method': 'GET',
+    }
+
 def _logout_(sid, cookies):
     '''Create request data for ChorusSession'''
     return {

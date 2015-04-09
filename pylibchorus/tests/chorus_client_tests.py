@@ -4,6 +4,7 @@
 import logging
 from pylibchorus.chorus_client import _login_
 from pylibchorus.chorus_client import _logout_
+from pylibchorus.chorus_client import _check_login_
 import unittest
 
 LOG = logging.getLogger(__name__)
@@ -72,3 +73,30 @@ class ChorusSessionTests(unittest.TestCase):
         self.assertEquals(cookies, actual['cookies'])
         self.assertEquals('/sessions', actual['url'])
         self.assertEquals('DELETE', actual['method'])
+
+    #pylint: disable=C0103
+    def test_check_login_returns_request_data(self):
+        '''Test _check_login_ returns correct request data'''
+        sid = 'foobar'
+        cookies = {'session_id': sid}
+        actual = _check_login_(sid, cookies)
+        self.assertIsNotNone(actual)
+        self.assertIn('data', actual)
+        self.assertIn('headers', actual)
+        self.assertIn('params', actual)
+        self.assertIn('cookies', actual)
+        self.assertIn('url', actual)
+        self.assertIn('method', actual)
+        self.assertIsNone(actual['data'])
+        self.assertIsNotNone(actual['headers'])
+        self.assertIsNone(actual['params'])
+        self.assertIsNotNone(actual['cookies'])
+        self.assertIsNotNone(actual['url'])
+        self.assertIsNotNone(actual['method'])
+        headers = actual['headers']
+        self.assertIn('content-type', headers)
+        self.assertEquals('application/x-www-form-urlencoded',
+                          headers['content-type'])
+        self.assertEquals(cookies, actual['cookies'])
+        self.assertEquals('/sessions', actual['url'])
+        self.assertEquals('GET', actual['method'])
