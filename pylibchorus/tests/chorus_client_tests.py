@@ -66,7 +66,7 @@ class ChorusSessionTests(unittest.TestCase):
     def test_logout_returns_request_data(self):
         '''Test _logout_ returns correct request data'''
         sid = 'foobar'
-        cookies = {'session_id', sid}
+        cookies = {'session_id': sid}
         actual = _logout_(sid, cookies)
         check_request_structure(self, actual)
         self.assertIsNone(actual['data'])
