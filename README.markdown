@@ -1,7 +1,10 @@
 # pylibchorus -- Python Chorus API Library #
 
+[![Build Status](https://travis-ci.org/kennyballou/pylibchorus.svg)](https://travis-ci.org/kennyballou/pylibchorus)
+
 This intends to be a near complete Python language binding of the
 [Chorus API][1].
+
 
 ## License ##
 
