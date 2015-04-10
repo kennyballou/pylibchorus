@@ -26,6 +26,31 @@ def check_login_status(session):
         session.config.get('alpine', 'host'),
         _check_login_(session.sid, session.cookies))
 
+def create_workfile(workspace_id, workfile_name, session):
+    '''POST new workfile to workspace'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'),
+        _create_workfile_(workspace_id,
+                          workfile_name,
+                          session.sid,
+                          session.cookies))
+
+def update_workfile_version(userid, workfile_id, workfile, session):
+    '''POST new workfile version'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'),
+        _update_workfile_version_(userid,
+                                  workfile_id,
+                                  workfile,
+                                  session.sid,
+                                  session.cookies))
+
+def delete_workfile(workfile_id, session):
+    '''DELETE workfile'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'),
+        _delete_workfile_(workfile_id, session.sid, session.cookies))
+
 def _get_url_(host, endpoint=""):
     '''Return the host and path for the chorus instance'''
     return "http://%s/%s" % (host, endpoint)

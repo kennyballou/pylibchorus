@@ -5,6 +5,9 @@ import logging
 from pylibchorus.chorus_client import login
 from pylibchorus.chorus_client import logout
 from pylibchorus.chorus_client import check_login_status
+from pylibchorus.chorus_client import create_workfile
+from pylibchorus.chorus_client import update_workfile_version
+from pylibchorus.chorus_client import delete_workfile
 
 LOG = logging.getLogger(__name__)
 
