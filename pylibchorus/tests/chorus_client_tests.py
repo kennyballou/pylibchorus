@@ -5,6 +5,7 @@ import logging
 from pylibchorus.chorus_client import _login_
 from pylibchorus.chorus_client import _logout_
 from pylibchorus.chorus_client import _check_login_
+from pylibchorus.chorus_client import _create_workfile_
 import unittest
 
 LOG = logging.getLogger(__name__)
@@ -100,3 +101,30 @@ class ChorusSessionTests(unittest.TestCase):
         self.assertEquals(cookies, actual['cookies'])
         self.assertEquals('/sessions', actual['url'])
         self.assertEquals('GET', actual['method'])
+
+    #pylint: disable=C0103
+    def test_create_workfile_returns_request_data(self):
+        '''Test _create_workfile_ returns correct request data'''
+        workspace_id = 1
+        workfile_name = 'foo'
+        sid = 'foobar'
+        cookies = {'session_id': sid}
+        actual = _create_workfile_(workspace_id, workfile_name, sid, cookies)
+        check_request_structure(self, actual)
+        self.assertIsNotNone(actual['data'])
+        self.assertIsNotNone(actual['headers'])
+        self.assertIsNotNone(actual['params'])
+        self.assertIsNotNone(actual['cookies'])
+        self.assertIsNotNone(actual['url'])
+        self.assertIsNotNone(actual['method'])
+        data = actual['data']
+        self.assertIn('workspace_id', data)
+        self.assertIn('file_name', data)
+        self.assertEquals(workspace_id, data['workspace_id'])
+        self.assertEquals(workfile_name, data['file_name'])
+        check_header(self, actual['headers'])
+        check_params(self, actual['params'], sid)
+        self.assertEquals(cookies, actual['cookies'])
+        self.assertEquals('/workspaces/%d/workfiles' % workspace_id,
+                          actual['url'])
+        self.assertEquals('POST', actual['method'])

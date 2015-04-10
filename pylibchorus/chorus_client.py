@@ -91,3 +91,21 @@ def _logout_(sid, cookies):
         'url': '/sessions',
         'method': 'DELETE',
     }
+
+def _create_workfile_(workspace_id, workfile_name, sid, cookies):
+    '''Create request data for workfile creation'''
+    return {
+        'data': {
+            'workspace_id': workspace_id,
+            'file_name': workfile_name,
+        },
+        'headers': {
+            'content-type': CONTENT_TYPE,
+        },
+        'params': {
+            'session_id': sid,
+        },
+        'cookies': cookies,
+        'url': '/workspaces/%s/workfiles' % workspace_id,
+        'method': 'POST',
+    }
