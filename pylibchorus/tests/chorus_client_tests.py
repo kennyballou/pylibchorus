@@ -9,19 +9,37 @@ import unittest
 
 LOG = logging.getLogger(__name__)
 
+def check_request_structure(testcase, request_obj):
+    '''Test the request structure is correct'''
+    testcase.assertIsNotNone(request_obj)
+    testcase.assertIn('data', request_obj)
+    testcase.assertIn('headers', request_obj)
+    testcase.assertIn('params', request_obj)
+    testcase.assertIn('cookies', request_obj)
+    testcase.assertIn('url', request_obj)
+    testcase.assertIn('method', request_obj)
+    check_header(testcase, request_obj['headers'])
+
+def check_header(testcase, header):
+    '''Test the header object conforms to the what the API requires'''
+    testcase.assertIsNotNone(header)
+    testcase.assertIn('content-type', header)
+    testcase.assertEquals(header['content-type'],
+                          'application/x-www-form-urlencoded')
+
+def check_params(testcase, params, expected_sid):
+    '''Check the params object contains the correct session_id'''
+    testcase.assertIsNotNone(params)
+    testcase.assertIn('session_id', params)
+    testcase.assertEqual(params['session_id'], expected_sid)
+
 class ChorusSessionTests(unittest.TestCase):
     '''ChorusSession Test Case'''
 
     def test_login_returns_request_data(self):
         '''Test _login_ returns request data'''
         actual = _login_('chorusadmin', 'secret')
-        self.assertIsNotNone(actual)
-        self.assertIn('data', actual)
-        self.assertIn('headers', actual)
-        self.assertIn('params', actual)
-        self.assertIn('cookies', actual)
-        self.assertIn('url', actual)
-        self.assertIn('method', actual)
+        check_request_structure(self, actual)
         self.assertIsNotNone(actual['data'])
         self.assertIsNotNone(actual['headers'])
         self.assertIsNotNone(actual['params'])
@@ -33,10 +51,7 @@ class ChorusSessionTests(unittest.TestCase):
         self.assertIn('password', data)
         self.assertEquals(data['username'], 'chorusadmin')
         self.assertEquals(data['password'], 'secret')
-        headers = actual['headers']
-        self.assertIn('content-type', headers)
-        self.assertEquals('application/x-www-form-urlencoded',
-                          headers['content-type'])
+        check_header(self, actual['headers'])
         params = actual['params']
         self.assertIn('session_id', params)
         self.assertEquals(params['session_id'], '')
@@ -50,13 +65,7 @@ class ChorusSessionTests(unittest.TestCase):
         sid = 'foobar'
         cookies = {'session_id', sid}
         actual = _logout_(sid, cookies)
-        self.assertIsNotNone(actual)
-        self.assertIn('data', actual)
-        self.assertIn('headers', actual)
-        self.assertIn('params', actual)
-        self.assertIn('cookies', actual)
-        self.assertIn('url', actual)
-        self.assertIn('method', actual)
+        check_request_structure(self, actual)
         self.assertIsNone(actual['data'])
         self.assertIsNotNone(actual['headers'])
         self.assertIsNotNone(actual['params'])
@@ -80,23 +89,14 @@ class ChorusSessionTests(unittest.TestCase):
         sid = 'foobar'
         cookies = {'session_id': sid}
         actual = _check_login_(sid, cookies)
-        self.assertIsNotNone(actual)
-        self.assertIn('data', actual)
-        self.assertIn('headers', actual)
-        self.assertIn('params', actual)
-        self.assertIn('cookies', actual)
-        self.assertIn('url', actual)
-        self.assertIn('method', actual)
+        check_request_structure(self, actual)
         self.assertIsNone(actual['data'])
         self.assertIsNotNone(actual['headers'])
         self.assertIsNone(actual['params'])
         self.assertIsNotNone(actual['cookies'])
         self.assertIsNotNone(actual['url'])
         self.assertIsNotNone(actual['method'])
-        headers = actual['headers']
-        self.assertIn('content-type', headers)
-        self.assertEquals('application/x-www-form-urlencoded',
-                          headers['content-type'])
+        check_header(self, actual['headers'])
         self.assertEquals(cookies, actual['cookies'])
         self.assertEquals('/sessions', actual['url'])
         self.assertEquals('GET', actual['method'])
