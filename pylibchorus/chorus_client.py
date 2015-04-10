@@ -9,47 +9,42 @@ LOG = logging.Logger(name=__name__)
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 JSON_CONTENT_TYPE = 'application/json'
 
-class ChorusSession(object):
-    '''Chorus User Session Object'''
+def login(username, password, session):
+    '''POST login request to chorus server'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'), _login_(username, password))
 
-    def __init__(self, config):
-        self.config = config
-        self.sid = None
-        self.cookies = None
+def logout(session):
+    '''DELETE login request to chorus server'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'),
+        _logout_(session.sid, session.cookies))
 
-    def __enter__(self):
-        '''create session and return sid and cookies'''
+def check_login_status(session):
+    '''GET login request to chorus server'''
+    return _perform_http_method_(
+        session.config.get('alpine', 'host'),
+        _check_login_(session.sid, session.cookies))
 
-        request_data = _login_(self.config.get('alpine', 'username'),
-                               self.config.get('alpine', 'password'))
+def _get_url_(host, endpoint=""):
+    '''Return the host and path for the chorus instance'''
+    return "http://%s/%s" % (host, endpoint)
 
-        LOG.debug("Opening Chorus Session")
-        post = requests.post(self.get_url(request_data['url']),
-                             params=request_data['params'],
-                             data=request_data['data'],
-                             headers=request_data['headers'])
-        LOG.info("Status code for session open: %d", post.status_code)
-        json = post.json()
-
-        self.sid = json['response']['session_id']
-        self.cookies = post.cookies
-        return self
-
-    def __exit__(self, _type, _value, _traceback):
-        '''Close chorus session'''
-        request_data = _logout_(self.sid, self.cookies)
-        LOG.debug("Closing Chorus Session")
-        delete = requests.delete(self.get_url(request_data['url']),
-                                 params=request_data['params'],
-                                 headers=request_data['headers'],
-                                 cookies=request_data['cookies'])
-
-        LOG.info("Status code for close: %d", delete.status_code)
-
-    def get_url(self, path=""):
-        '''Return the host and path for the chorus instance'''
-
-        return "http://%s/%s" % (self.config.get('alpine', 'host'), path)
+def _perform_http_method_(host, request_data):
+    '''Perform IO operation to Chorus Server using request_data object'''
+    methods = {'GET': requests.get,
+               'POST': requests.post,
+               'DELETE': requests.delete,}
+    method = methods[request_data['method']]
+    response = method(_get_url_(host, request_data['url']),
+                      params=request_data['params'],
+                      headers=request_data['headers'],
+                      cookies=request_data['cookies'],
+                      data=request_data['data'])
+    LOG.info("Request: %s status code: %d",
+             request_data['url'],
+             response.status_code)
+    return response
 
 def _login_(username, password):
     '''Create Request Data for ChorusSession'''
