@@ -8,7 +8,11 @@ from pylibchorus.chorus_api import _check_login_
 from pylibchorus.chorus_api import _create_workfile_
 from pylibchorus.chorus_api import _update_workfile_version_
 from pylibchorus.chorus_api import _delete_workfile_
-import unittest
+import sys
+if sys.version_info[0] == 2 and sys.version_info[1] == 6:
+    import unittest2 as unittest
+else:
+    import unittest
 
 LOG = logging.getLogger(__name__)
 
