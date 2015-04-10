@@ -129,3 +129,18 @@ def _update_workfile_version_(userid, workfile_id, workfile, sid, cookies):
         'url': '/workfiles/%s/versions' % workfile_id,
         'method': 'POST',
     }
+
+def _delete_workfile_(workfile_id, sid, cookies):
+    '''Create request data to delete a workfile'''
+    return {
+        'data': None,
+        'params': {
+            'session_id': sid,
+        },
+        'headers': {
+            'content-type': CONTENT_TYPE,
+        },
+        'cookies': cookies,
+        'url': '/workfiles/%s' % workfile_id,
+        'method': 'DELETE',
+    }

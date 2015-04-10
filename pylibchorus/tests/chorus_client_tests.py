@@ -7,6 +7,7 @@ from pylibchorus.chorus_client import _logout_
 from pylibchorus.chorus_client import _check_login_
 from pylibchorus.chorus_client import _create_workfile_
 from pylibchorus.chorus_client import _update_workfile_version_
+from pylibchorus.chorus_client import _delete_workfile_
 import unittest
 
 LOG = logging.getLogger(__name__)
@@ -157,3 +158,15 @@ class ChorusSessionTests(unittest.TestCase):
         self.assertEquals(data['content'], workfile)
         self.assertEquals('/workfiles/1/versions', actual['url'])
         self.assertEquals('POST', actual['method'])
+
+    def test_delete_workfile_returs_rquest_data(self):
+        '''Test _delete_workfile_ returns correct request data'''
+        workfile_id = 1
+        sid = 'foobar'
+        cookies = {'session_id': sid}
+        actual = _delete_workfile_(workfile_id, sid, cookies)
+        check_request_structure(self, actual)
+        check_params(self, actual['params'], sid)
+        self.assertIsNone(actual['data'])
+        self.assertEquals('/workfiles/1', actual['url'])
+        self.assertEquals('DELETE', actual['method'])
