@@ -2,12 +2,12 @@
 '''Chorus Client Test Cases'''
 
 import logging
-from pylibchorus.chorus_client import _login_
-from pylibchorus.chorus_client import _logout_
-from pylibchorus.chorus_client import _check_login_
-from pylibchorus.chorus_client import _create_workfile_
-from pylibchorus.chorus_client import _update_workfile_version_
-from pylibchorus.chorus_client import _delete_workfile_
+from pylibchorus.chorus_api import _login_
+from pylibchorus.chorus_api import _logout_
+from pylibchorus.chorus_api import _check_login_
+from pylibchorus.chorus_api import _create_workfile_
+from pylibchorus.chorus_api import _update_workfile_version_
+from pylibchorus.chorus_api import _delete_workfile_
 import unittest
 
 LOG = logging.getLogger(__name__)
