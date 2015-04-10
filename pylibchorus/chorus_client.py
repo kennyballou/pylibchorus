@@ -109,3 +109,23 @@ def _create_workfile_(workspace_id, workfile_name, sid, cookies):
         'url': '/workspaces/%s/workfiles' % workspace_id,
         'method': 'POST',
     }
+
+def _update_workfile_version_(userid, workfile_id, workfile, sid, cookies):
+    '''Create request data to update a workfile'''
+    return {
+        'data': {
+            'owner_id': userid,
+            'modifier_id': userid,
+            'commit_message': 'git commit',
+            'content': workfile,
+        },
+        'params': {
+            'session_id': sid,
+        },
+        'headers': {
+            'content-type': CONTENT_TYPE,
+        },
+        'cookies': cookies,
+        'url': '/workfiles/%s/versions' % workfile_id,
+        'method': 'POST',
+    }

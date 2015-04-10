@@ -6,6 +6,7 @@ from pylibchorus.chorus_client import _login_
 from pylibchorus.chorus_client import _logout_
 from pylibchorus.chorus_client import _check_login_
 from pylibchorus.chorus_client import _create_workfile_
+from pylibchorus.chorus_client import _update_workfile_version_
 import unittest
 
 LOG = logging.getLogger(__name__)
@@ -127,4 +128,32 @@ class ChorusSessionTests(unittest.TestCase):
         self.assertEquals(cookies, actual['cookies'])
         self.assertEquals('/workspaces/%d/workfiles' % workspace_id,
                           actual['url'])
+        self.assertEquals('POST', actual['method'])
+
+    #pylint: disable=C0103
+    def test_update_workfile_returns_request_data(self):
+        '''Test _update_workfile_version_ returns correct request data'''
+        userid = 1
+        workfile_id = 1
+        workfile = 'some long string that looks like code, somewhere'
+        sid = 'foobar'
+        cookies = {'session_id': sid}
+        actual = _update_workfile_version_(
+            userid,
+            workfile_id,
+            workfile,
+            sid,
+            cookies)
+        check_request_structure(self, actual)
+        check_params(self, actual['params'], sid)
+        data = actual['data']
+        self.assertIn('owner_id', data)
+        self.assertIn('modifier_id', data)
+        self.assertIn('commit_message', data)
+        self.assertIn('content', data)
+        self.assertEquals(data['owner_id'], userid)
+        self.assertEquals(data['modifier_id'], userid)
+        self.assertEquals(data['commit_message'], 'git commit')
+        self.assertEquals(data['content'], workfile)
+        self.assertEquals('/workfiles/1/versions', actual['url'])
         self.assertEquals('POST', actual['method'])
