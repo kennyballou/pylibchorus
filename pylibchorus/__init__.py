@@ -31,7 +31,7 @@ class ChorusSession(object):
         json = post.json()
 
         self.sid = json['response']['session_id']
-        self.cookies = post.cookies
+        self.cookies = dict(post.cookies)
         return self
 
     def __exit__(self, _type, _value, _traceback):
