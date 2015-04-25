@@ -20,10 +20,9 @@ usage.
     ['/tmp/alpine.cfg']
     >>> with pylibchorus.ChorusSession(config) as session:
     ...     print(session.sid)
-    ...     resp = pylibchorus.check_login_status(session)
-    ...     print(resp.status_code)
-    ...     json = resp.json()
-    ...     print(json['response']['session_id'])
+    ...     ok, sid = pylibchorus.check_login_status(session)
+    ...     print(ok)
+    ...     print(sid)
     ...
     49fb8e27e591d9ccb6f0006334eedb8e4d8004a5
     200

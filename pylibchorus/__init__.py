@@ -24,14 +24,16 @@ class ChorusSession(object):
         '''create session and return sid and cookies'''
 
         LOG.debug("Opening Chorus Session")
-        post = login(
+        code, json, cookies = login(
             self.config.get('alpine', 'username'),
             self.config.get('alpine', 'password'),
             self)
-        json = post.json()
+
+        if code != 201:
+            raise RuntimeError("Chorus Session Login Failed")
 
         self.sid = json['response']['session_id']
-        self.cookies = dict(post.cookies)
+        self.cookies = dict(cookies)
         return self
 
     def __exit__(self, _type, _value, _traceback):

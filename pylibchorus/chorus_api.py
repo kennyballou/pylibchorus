@@ -20,36 +20,44 @@ def logout(session):
         session.config.get('alpine', 'host'),
         _logout_(session.sid, session.cookies))
 
+#pylint: disable=C0103
 def check_login_status(session):
     '''GET login request to chorus server'''
-    return _perform_http_method_(
+    ok, json, _ = _perform_http_method_(
         session.config.get('alpine', 'host'),
         _check_login_(session.sid, session.cookies))
+    return (ok, json['response']['session_id'],)
 
+#pylint: disable=C0103
 def create_workfile(workspace_id, workfile_name, session):
     '''POST new workfile to workspace'''
-    return _perform_http_method_(
+    ok, json, _ = _perform_http_method_(
         session.config.get('alpine', 'host'),
         _create_workfile_(workspace_id,
                           workfile_name,
                           session.sid,
                           session.cookies))
+    return (ok, json['response']['id'], json['response']['user_modified_at'],)
 
+#pylint: disable=C0103
 def update_workfile_version(userid, workfile_id, workfile, session):
     '''POST new workfile version'''
-    return _perform_http_method_(
+    ok, json, _ = _perform_http_method_(
         session.config.get('alpine', 'host'),
         _update_workfile_version_(userid,
                                   workfile_id,
                                   workfile,
                                   session.sid,
                                   session.cookies))
+    return (ok, json['response']['id'], json['response']['user_modified_at'],)
 
+#pylint: disable=C0103
 def delete_workfile(workfile_id, session):
     '''DELETE workfile'''
-    return _perform_http_method_(
+    ok, _, _ = _perform_http_method_(
         session.config.get('alpine', 'host'),
         _delete_workfile_(workfile_id, session.sid, session.cookies))
+    return ok
 
 def _get_url_(host, endpoint=""):
     '''Return the host and path for the chorus instance'''
@@ -69,7 +77,7 @@ def _perform_http_method_(host, request_data):
     LOG.info("Request: %s status code: %d",
              request_data['url'],
              response.status_code)
-    return response
+    return (response.status_code, response.json(), response.cookies,)
 
 def _login_(username, password):
     '''Create Request Data for ChorusSession'''
