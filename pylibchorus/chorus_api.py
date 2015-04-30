@@ -9,55 +9,37 @@ LOG = logging.Logger(name=__name__)
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 JSON_CONTENT_TYPE = 'application/json'
 
-def login(username, password, session):
-    '''POST login request to chorus server'''
-    return _perform_http_method_(
-        session.config.get('alpine', 'host'), _login_(username, password))
-
-def logout(session):
-    '''DELETE login request to chorus server'''
-    return _perform_http_method_(
+def get(url, session):
+    '''Perform GET request using current session'''
+    isok, json, cookies = _perform_http_method_(
         session.config.get('alpine', 'host'),
-        _logout_(session.sid, session.cookies))
+        _get_(url, session.sid, session.cookies))
+    session.cookies = cookies
+    return (isok, json,)
 
-#pylint: disable=C0103
-def check_login_status(session):
-    '''GET login request to chorus server'''
-    ok, json, _ = _perform_http_method_(
+def post(url, session, data=None):
+    '''Perform POST request using current session'''
+    isok, json, cookies = _perform_http_method_(
         session.config.get('alpine', 'host'),
-        _check_login_(session.sid, session.cookies))
-    return (ok, json['response']['session_id'],)
+        _post_(url, session.sid, session.cookies, data=data))
+    session.cookies = cookies
+    return (isok, json,)
 
-#pylint: disable=C0103
-def create_workfile(workspace_id, workfile_name, session):
-    '''POST new workfile to workspace'''
-    ok, json, _ = _perform_http_method_(
+def put(url, session, data=None):
+    '''Perform PUT request using current session'''
+    isok, json, cookies = _perform_http_method_(
         session.config.get('alpine', 'host'),
-        _create_workfile_(workspace_id,
-                          workfile_name,
-                          session.sid,
-                          session.cookies))
-    return (ok, json['response']['id'], json['response']['user_modified_at'],)
+        _put_(url, session.sid, session.cookies, data=data))
+    session.cookies = cookies
+    return (isok, json,)
 
-#pylint: disable=C0103
-def update_workfile_version(userid, workfile_id, workfile, session):
-    '''POST new workfile version'''
-    ok, json, _ = _perform_http_method_(
+def delete(url, session):
+    '''Perform DELETE request using current session'''
+    isok, json, cookies = _perform_http_method_(
         session.config.get('alpine', 'host'),
-        _update_workfile_version_(userid,
-                                  workfile_id,
-                                  workfile,
-                                  session.sid,
-                                  session.cookies))
-    return (ok, json['response']['id'], json['response']['user_modified_at'],)
-
-#pylint: disable=C0103
-def delete_workfile(workfile_id, session):
-    '''DELETE workfile'''
-    ok, _, _ = _perform_http_method_(
-        session.config.get('alpine', 'host'),
-        _delete_workfile_(workfile_id, session.sid, session.cookies))
-    return ok
+        _delete_(url, session.sid, session.cookies))
+    session.cookies = cookies
+    return (isok, json,)
 
 def _get_url_(host, endpoint=""):
     '''Return the host and path for the chorus instance'''
@@ -67,6 +49,7 @@ def _perform_http_method_(host, request_data):
     '''Perform IO operation to Chorus Server using request_data object'''
     methods = {'GET': requests.get,
                'POST': requests.post,
+               'PUT': requests.put,
                'DELETE': requests.delete,}
     method = methods[request_data['method']]
     response = method(_get_url_(host, request_data['url']),
@@ -77,81 +60,42 @@ def _perform_http_method_(host, request_data):
     LOG.info("Request: %s status code: %d",
              request_data['url'],
              response.status_code)
-    return (response.status_code, response.json(), response.cookies,)
+    return (response.status_code, response.json(), dict(response.cookies),)
 
-def _login_(username, password):
-    '''Create Request Data for ChorusSession'''
-    return {
-        'data': {
-            'username': username,
-            'password': password,
-        },
-        'headers': {
-            'content-type': CONTENT_TYPE,
-        },
-        'params': {
-            'session_id': '',
-        },
-        'cookies': None,
-        'url': '/sessions?session_id=',
-        'method': 'POST',
-    }
-
-def _check_login_(_, cookies):
-    '''Create request data for check login check'''
+def _get_(url, sid, cookies):
+    '''Create GET request data'''
     return {
         'data': None,
-        'params': None,
+        'params': {
+            'session_id': sid,
+        },
         'headers': {
             'content-type': CONTENT_TYPE,
         },
         'cookies': cookies,
-        'url': '/sessions',
+        'url': url,
         'method': 'GET',
     }
 
-def _logout_(sid, cookies):
-    '''Create request data for ChorusSession'''
+def _post_(url, sid, cookies, data):
+    '''Create POST request data'''
     return {
-        'data': None,
-        'headers': {
-            'content-type': CONTENT_TYPE,
-        },
+        'data': data,
         'params': {
             'session_id': sid,
-        },
-        'cookies': cookies,
-        'url': '/sessions',
-        'method': 'DELETE',
-    }
-
-def _create_workfile_(workspace_id, workfile_name, sid, cookies):
-    '''Create request data for workfile creation'''
-    return {
-        'data': {
-            'workspace_id': workspace_id,
-            'file_name': workfile_name,
         },
         'headers': {
             'content-type': CONTENT_TYPE,
         },
-        'params': {
-            'session_id': sid,
-        },
         'cookies': cookies,
-        'url': '/workspaces/%s/workfiles' % workspace_id,
+        'url': url,
         'method': 'POST',
     }
 
-def _update_workfile_version_(userid, workfile_id, workfile, sid, cookies):
-    '''Create request data to update a workfile'''
+def _put_(url, sid, cookies, data):
+    '''Create PUT request data'''
     return {
-        'data': {
-            'owner_id': userid,
-            'modifier_id': userid,
-            'commit_message': 'git commit',
-            'content': workfile,
-        },
+        'data': data,
         'params': {
             'session_id': sid,
         },
@@ -159,12 +103,12 @@ def _update_workfile_version_(userid, workfile_id, workfile, sid, cookies):
             'content-type': CONTENT_TYPE,
         },
         'cookies': cookies,
-        'url': '/workfiles/%s/versions' % workfile_id,
-        'method': 'POST',
+        'url': url,
+        'method': 'PUT',
     }
 
-def _delete_workfile_(workfile_id, sid, cookies):
-    '''Create request data to delete a workfile'''
+def _delete_(url, sid, cookies):
+    '''Create DELETE request data'''
     return {
         'data': None,
         'params': {
@@ -174,6 +118,6 @@ def _delete_workfile_(workfile_id, sid, cookies):
             'content-type': CONTENT_TYPE,
         },
         'cookies': cookies,
-        'url': '/workfiles/%s' % workfile_id,
+        'url': url,
         'method': 'DELETE',
     }
